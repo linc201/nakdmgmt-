@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAKD Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --pink: #FF1F6D;
+    --pink-light: #FF6FA0;
+    --pink-pale: #FFD6E7;
+    --black: #0A0A0A;
+    --black-soft: #111111;
+    --black-mid: #1A1A1A;
+    --white: #FAFAFA;
+    --gray: #2A2A2A;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--pink);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: normal;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid var(--pink);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.4s ease, opacity 0.3s;
+    opacity: 0.5;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2rem 4rem;
+    mix-blend-mode: normal;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: var(--white);
+    text-decoration: none;
+  }
+  .logo span { color: var(--pink); }
+
+  nav ul {
+    display: flex; gap: 3rem; list-style: none;
+  }
+  nav ul a {
+    color: var(--white); text-decoration: none;
+    font-size: 0.8rem; letter-spacing: 0.18em;
+    text-transform: uppercase; font-weight: 400;
+    opacity: 0.7;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  nav ul a:hover { opacity: 1; color: var(--pink); }
+
+  .nav-cta {
+    background: var(--pink);
+    color: var(--white) !important;
+    opacity: 1 !important;
+    padding: 0.6rem 1.6rem;
+    border-radius: 0;
+    font-weight: 500 !important;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--pink-light) !important; color: var(--white) !important; }
+
+  /* Hero */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 8rem 4rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 28vw;
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,31,109,0.08);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    letter-spacing: -0.04em;
+  }
+
+  .hero-label {
+    font-size: 0.72rem; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--pink);
+    margin-bottom: 2rem;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 10vw, 9rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.8s 0.15s ease both;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--pink);
+    display: block;
+  }
+
+  .hero-sub {
+    max-width: 420px;
+    font-size: 1rem;
+    line-height: 1.8;
+    opacity: 0.6;
+    margin-bottom: 3.5rem;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 1.5rem; align-items: center;
+    animation: fadeUp 0.8s 0.45s ease both;
+  }
+  .btn-primary {
+    background: var(--pink);
+    color: var(--white);
+    padding: 1rem 2.5rem;
+    text-decoration: none;
+    font-size: 0.82rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: transform 0.2s, background 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--pink-light); transform: translateY(-2px); }
+
+  .btn-ghost {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.82rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 2px;
+  }
+  .btn-ghost:hover { opacity: 1; }
+
+  /* Marquee */
+  .marquee-wrap {
+    background: var(--pink);
+    padding: 1rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .marquee-inner {
+    display: inline-block;
+    animation: marquee 18s linear infinite;
+  }
+  .marquee-inner span {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--black);
+    font-weight: 700;
+    margin: 0 2.5rem;
+  }
+  .marquee-inner span.dot { margin: 0; }
+
+  /* Juicy House badge */
+  .juicy-banner {
+    background: var(--black-mid);
+    border-top: 1px solid rgba(255,31,109,0.2);
+    border-bottom: 1px solid rgba(255,31,109,0.2);
+    padding: 1.5rem 4rem;
+    text-align: center;
+  }
+  .juicy-banner p {
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--pink-light);
+    font-weight: 400;
+  }
+  .juicy-banner p span {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--white);
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  /* About */
+  #about {
+    padding: 8rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 2rem;
+  }
+
+  .section-title em { font-style: italic; color: var(--pink); }
+
+  .section-body {
+    opacity: 0.65;
+    line-height: 1.9;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: rgba(255,31,109,0.1);
+    border: 1px solid rgba(255,31,109,0.15);
+  }
+  .stat-block {
+    background: var(--black-soft);
+    padding: 2rem;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--pink);
+    display: block;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+
+  /* Services */
+  #services {
+    padding: 8rem 4rem;
+    background: var(--black-soft);
+  }
+
+  .services-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 5rem;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .service-card {
+    background: var(--black);
+    padding: 3rem 2.5rem;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--pink);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card:hover { background: var(--black-mid); }
+
+  .service-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,31,109,0.25);
+    line-height: 1;
+    margin-bottom: 2rem;
+    display: block;
+  }
+
+  .service-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .service-body {
+    font-size: 0.87rem;
+    opacity: 0.5;
+    line-height: 1.8;
+  }
+
+  /* Roster */
+  #roster {
+    padding: 8rem 4rem;
+  }
+
+  .roster-header {
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+
+  .roster-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: rgba(255,255,255,0.04);
+    margin-bottom: 3rem;
+  }
+
+  .roster-card {
+    background: var(--black-soft);
+    aspect-ratio: 3/4;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s;
+  }
+
+  .roster-card-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--black-mid) 0%, #1a0a12 100%);
+  }
+
+  .roster-card-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--pink) 0px,
+      var(--pink) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  }
+
+  .roster-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+  }
+
+  .roster-initials {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -65%);
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    font-weight: 900;
+    color: rgba(255,31,109,0.2);
+    z-index: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .roster-info {
+    position: relative; z-index: 2;
+  }
+  .roster-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .roster-handle {
+    font-size: 0.75rem;
+    color: var(--pink-light);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .roster-followers {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.45;
+  }
+
+  /* Juicy House Feature */
+  .juicy-feature {
+    background: linear-gradient(135deg, #1a0010 0%, #0d0008 100%);
+    border: 1px solid rgba(255,31,109,0.3);
+    padding: 4rem;
+    display: flex; gap: 4rem; align-items: center;
+    margin-top: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .juicy-feature::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 60%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,31,109,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .juicy-badge {
+    background: var(--pink);
+    color: var(--white);
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  .juicy-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+  }
+  .juicy-title em { color: var(--pink); font-style: italic; }
+
+  .juicy-desc { opacity: 0.55; font-size: 0.9rem; line-height: 1.8; }
+
+  .juicy-stat {
+    text-align: center;
+    flex-shrink: 0;
+    width: 180px;
+  }
+  .juicy-stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--pink);
+    display: block;
+    line-height: 1;
+  }
+  .juicy-stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  /* Contact */
+  #contact {
+    padding: 8rem 4rem;
+    background: var(--black-soft);
+    text-align: center;
+  }
+
+  #contact .section-title { font-size: clamp(3rem, 7vw, 6rem); margin-bottom: 1.5rem; }
+
+  #contact .section-body { max-width: 500px; margin: 0 auto 3rem; }
+
+  .contact-form {
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .contact-form input,
+  .contact-form select,
+  .contact-form textarea {
+    background: var(--black);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white);
+    padding: 1rem 1.2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    appearance: none;
+  }
+  .contact-form input:focus,
+  .contact-form select:focus,
+  .contact-form textarea:focus { border-color: var(--pink); }
+  .contact-form input::placeholder,
+  .contact-form textarea::placeholder { opacity: 0.35; color: var(--white); }
+  .contact-form select option { background: var(--black); }
+  .contact-form textarea { min-height: 130px; resize: vertical; }
+
+  .form-submit {
+    background: var(--pink);
+    border: none;
+    color: var(--white);
+    padding: 1.1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-weight: 500;
+    cursor: none;
+    transition: background 0.2s, transform 0.2s;
+    width: 100%;
+  }
+  .form-submit:hover { background: var(--pink-light); transform: translateY(-2px); }
+
+  /* Footer */
+  footer {
+    padding: 3rem 4rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+  }
+  .footer-logo span { color: var(--pink); }
+
+  .footer-juicy {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--pink);
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  .footer-copy {
+    font-size: 0.72rem;
+    opacity: 0.3;
+    letter-spacing: 0.05em;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="logo">NAKD<span>.</span></a>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#roster">Roster</a></li>
+    <li><a href="#contact" class="nav-cta">Work With Us</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-bg-text">NAKD</div>
+  <p class="hero-label">Est. 2024 &nbsp;·&nbsp; Creator Management</p>
+  <h1 class="hero-title">
+    Boldly<br>
+    <em>Unfiltered.</em>
+  </h1>
+  <p class="hero-sub">We build careers, not just followings. NAKD Management represents the next generation of digital creators — raw, authentic, unstoppable.</p>
+  <div class="hero-actions">
+    <a href="#contact" class="btn-primary">Join the Roster</a>
+    <a href="#services" class="btn-ghost">Our Services</a>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    <span>Brand Deals</span><span>·</span>
+    <span>Talent Management</span><span>·</span>
+    <span>Content Strategy</span><span>·</span>
+    <span>Creator Growth</span><span>·</span>
+    <span>Partnerships</span><span>·</span>
+    <span>Social Media</span><span>·</span>
+    <span>Brand Deals</span><span>·</span>
+    <span>Talent Management</span><span>·</span>
+    <span>Content Strategy</span><span>·</span>
+    <span>Creator Growth</span><span>·</span>
+    <span>Partnerships</span><span>·</span>
+    <span>Social Media</span><span>·</span>
+  </div>
+</div>
+
+<!-- Juicy House Banner -->
+<div class="juicy-banner">
+  <p>The official management agency of &nbsp;<span>Juicy House</span></p>
+</div>
+
+<!-- About -->
+<section id="about">
+  <div class="reveal">
+    <p class="section-label">Who We Are</p>
+    <h2 class="section-title">More than<br><em>management.</em></h2>
+    <p class="section-body">NAKD Management is a boutique creator agency built for the unapologetically real. We don't chase trends — we set them. Our team works hands-on with every creator to build a career that's as authentic as their content.</p>
+    <p class="section-body">From brand deal negotiation to long-term strategy, we handle the business so you can focus on what you do best: creating.</p>
+  </div>
+  <div class="reveal">
+    <div class="stat-grid">
+      <div class="stat-block">
+        <span class="stat-num">200M+</span>
+        <span class="stat-label">Combined Reach</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num">$4M+</span>
+        <span class="stat-label">Deals Secured</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num">50+</span>
+        <span class="stat-label">Brand Partners</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Creator Focused</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section id="services">
+  <div class="services-header reveal">
+    <div>
+      <p class="section-label">What We Do</p>
+      <h2 class="section-title">Full spectrum<br><em>support.</em></h2>
+    </div>
+  </div>
+
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <span class="service-num">01</span>
+      <h3 class="service-title">Talent Management</h3>
+      <p class="service-body">Dedicated day-to-day management for your career. We handle contracts, scheduling, communications, and strategy — all of it.</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-num">02</span>
+      <h3 class="service-title">Brand Partnerships</h3>
+      <p class="service-body">We connect creators with brands that actually align. No awkward placements — just authentic deals that your audience will love.</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-num">03</span>
+      <h3 class="service-title">Content Strategy</h3>
+      <p class="service-body">Data-driven strategy meets creative instinct. We help you grow without losing what makes you, you.</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-num">04</span>
+      <h3 class="service-title">Monetization</h3>
+      <p class="service-body">From sponsored posts to merch and beyond — we identify every revenue stream and maximize it for long-term financial growth.</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-num">05</span>
+      <h3 class="service-title">PR & Press</h3>
+      <p class="service-body">Get you in the rooms that matter. Media placements, press relationships, and reputation management handled professionally.</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-num">06</span>
+      <h3 class="service-title">Legal & Contracts</h3>
+      <p class="service-body">No creator should sign a bad deal. We review every contract and fight for terms that protect your work and your future.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Roster -->
+<section id="roster">
+  <div class="roster-header reveal">
+    <p class="section-label">Our Roster</p>
+    <h2 class="section-title">The Talent</h2>
+  </div>
+
+  <div class="roster-grid">
+    <div class="roster-card reveal">
+      <div class="roster-card-bg"></div>
+      <div class="roster-card-pattern"></div>
+      <div class="roster-card-overlay"></div>
+      <div class="roster-initials">AL</div>
+      <div class="roster-info">
+        <p class="roster-name">Alex Luna</p>
+        <p class="roster-handle">@alexluna</p>
+        <p class="roster-followers">3.2M Followers</p>
+      </div>
+    </div>
+    <div class="roster-card reveal">
+      <div class="roster-card-bg"></div>
+      <div class="roster-card-pattern"></div>
+      <div class="roster-card-overlay"></div>
+      <div class="roster-initials">MV</div>
+      <div class="roster-info">
+        <p class="roster-name">Mia Voss</p>
+        <p class="roster-handle">@miavoss</p>
+        <p class="roster-followers">1.8M Followers</p>
+      </div>
+    </div>
+    <div class="roster-card reveal">
+      <div class="roster-card-bg"></div>
+      <div class="roster-card-pattern"></div>
+      <div class="roster-card-overlay"></div>
+      <div class="roster-initials">JK</div>
+      <div class="roster-info">
+        <p class="roster-name">Jaden Kai</p>
+        <p class="roster-handle">@jadenkai</p>
+        <p class="roster-followers">5.1M Followers</p>
+      </div>
+    </div>
+    <div class="roster-card reveal">
+      <div class="roster-card-bg"></div>
+      <div class="roster-card-pattern"></div>
+      <div class="roster-card-overlay"></div>
+      <div class="roster-initials">SR</div>
+      <div class="roster-info">
+        <p class="roster-name">Sofia Rae</p>
+        <p class="roster-handle">@sofiarae</p>
+        <p class="roster-followers">2.6M Followers</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Juicy House Feature -->
+  <div class="juicy-feature reveal">
+    <div style="flex:1">
+      <span class="juicy-badge">Featured Partnership</span>
+      <h3 class="juicy-title">Juicy <em>House</em></h3>
+      <p class="juicy-desc">The official management agency of Juicy House — one of the most-watched creator collectives in the game. We're proud to represent their talent and help build something bigger than content.</p>
+    </div>
+    <div style="display:flex; gap:2px; background:rgba(255,31,109,0.1);">
+      <div class="juicy-stat" style="background:rgba(0,0,0,0.5); padding:2rem;">
+        <span class="juicy-stat-num">50M+</span>
+        <span class="juicy-stat-label">Monthly Views</span>
+      </div>
+      <div class="juicy-stat" style="background:rgba(0,0,0,0.5); padding:2rem;">
+        <span class="juicy-stat-num">12+</span>
+        <span class="juicy-stat-label">Creators</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="reveal">
+    <p class="section-label">Get In Touch</p>
+    <h2 class="section-title">Let's Build<br><em>Together.</em></h2>
+    <p class="section-body">Ready to take your content career to the next level? We're accepting new talent inquiries. Tell us about yourself.</p>
+
+    <form class="contact-form" onsubmit="return false;">
+      <div class="form-row">
+        <input type="text" placeholder="Your Name">
+        <input type="email" placeholder="Email Address">
+      </div>
+      <input type="text" placeholder="Social Handle(s)">
+      <select>
+        <option value="" disabled selected>Primary Platform</option>
+        <option>TikTok</option>
+        <option>Instagram</option>
+        <option>YouTube</option>
+        <option>Twitch</option>
+        <option>Multiple Platforms</option>
+      </select>
+      <textarea placeholder="Tell us about your content and what you're looking for..."></textarea>
+      <button type="submit" class="form-submit">Submit Inquiry</button>
+    </form>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-logo">NAKD<span>.</span></div>
+  <div class="footer-juicy">
+    The official management agency of Juicy House
+  </div>
+  <p class="footer-copy">© 2024 NAKD Management. All rights reserved.</p>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
+  });
+
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
